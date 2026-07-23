@@ -1,0 +1,40 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build for Android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Caches the downloaded Android SDK/NDK so future builds don't
+      # re-download several hundred MB every run. Only busts when
+      # buildozer.spec changes.
+      - name: Cache Buildozer global directory
+        uses: actions/cache@v5
+        with:
+          path: .buildozer_global
+          key: buildozer-global-${{ hashFiles('buildozer.spec') }}
+
+      - name: Build with Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          buildozer_version: stable
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v7
+        with:
+          name: coinflipultimate-apk
+          path: ${{ steps.buildozer.outputs.filename }}
