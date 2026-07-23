@@ -50,6 +50,12 @@ android.api = 34
 # (int) Minimum Android API this APK will run on
 android.minapi = 21
 
+# (bool) Automatically accept the Android SDK license.
+# Required for CI/headless builds — there's no terminal to type "y" at,
+# so without this the build-tools install gets silently skipped and
+# buildozer fails later with "Aidl not found, please install it."
+android.accept_sdk_license = True
+
 # (list) Architectures to build for
 android.archs = arm64-v8a, armeabi-v7a
 
