@@ -24,17 +24,25 @@ jobs:
       - name: Cache Buildozer global directory
         uses: actions/cache@v5
         with:
-          path: .buildozer_global
+          path: .buildozer_cache
           key: buildozer-global-${{ hashFiles('buildozer.spec') }}
 
+      # Runs Buildozer's own official Docker image directly instead of
+      # the ArtemSBulgakov/buildozer-action wrapper. That wrapper builds
+      # its own Docker image from scratch on every run, and its Dockerfile
+      # currently fails on `apt update` after adding a broken PPA. Pulling
+      # the prebuilt official image skips that step entirely.
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          buildozer_version: stable
+        run: |
+          mkdir -p "$PWD/.buildozer_cache"
+          docker run --rm \
+            --volume "$PWD/.buildozer_cache":/home/user/.buildozer \
+            --volume "$PWD":/home/user/hostcwd \
+            ghcr.io/kivy/buildozer:latest \
+            android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v7
         with:
           name: coinflipultimate-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
